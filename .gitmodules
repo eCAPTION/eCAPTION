@@ -1,0 +1,3 @@
+[submodule "Chatbot-Component"]
+	path = Chatbot-Component
+	url = https://github.com/eCAPTION/Chatbot-Component
