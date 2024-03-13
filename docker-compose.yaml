@@ -1,0 +1,116 @@
+version: '3'
+services:
+  chatbot:
+    build:
+      context: ./Chatbot-Component
+      dockerfile: ./chatbot/Dockerfile
+    networks:
+      - ecaption
+    env_file: ./Chatbot-Component/.env
+
+  chatbot_kafka_consumer:
+    build:
+      context: ./Chatbot-Component
+      dockerfile: ./kafka_io_logic/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Chatbot-Component/.env
+
+  web_scraper:
+    build: 
+      context: ./Information-Querying-Component
+      dockerfile: ./web_scraper/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Information-Querying-Component/.env.docker
+
+  nlp:
+    build: 
+      context: ./Information-Querying-Component
+      dockerfile: ./nlp/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Information-Querying-Component/.env.docker
+
+  news_embedding:
+    build: 
+      context: ./Information-Querying-Component
+      dockerfile: ./news_embedding/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Information-Querying-Component/.env.docker
+
+  news_search:
+    build: 
+      context: ./Information-Querying-Component
+      dockerfile: ./news_search/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+      opensearch:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Information-Querying-Component/.env.docker
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+    networks:
+      - ecaption
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    depends_on:
+      - zookeeper
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
+    ports:
+      - 29092:29092
+    networks:
+      - ecaption
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  opensearch:
+    image: opensearchproject/opensearch:latest
+    ports:
+      - 29200:9200
+    networks:
+      - ecaption
+    environment:
+      - discovery.type=single-node
+      - OPENSEARCH_INITIAL_ADMIN_PASSWORD=${OPENSEARCH_HTTP_AUTH_PASSWORD}
+    healthcheck:
+      test: "curl --silent -ku 'admin:admin' https://opensearch:9200 >/dev/null || exit 1"
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
+networks:
+  ecaption:
+    driver: bridge
