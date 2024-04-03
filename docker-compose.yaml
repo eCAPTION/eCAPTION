@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   chatbot:
     build:
@@ -20,7 +20,7 @@ services:
     env_file: ./Chatbot-Component/.env
 
   web_scraper:
-    build: 
+    build:
       context: ./Information-Querying-Component
       dockerfile: ./web_scraper/Dockerfile
     depends_on:
@@ -31,7 +31,7 @@ services:
     env_file: ./Information-Querying-Component/.env.docker
 
   nlp:
-    build: 
+    build:
       context: ./Information-Querying-Component
       dockerfile: ./nlp/Dockerfile
     depends_on:
@@ -42,7 +42,7 @@ services:
     env_file: ./Information-Querying-Component/.env.docker
 
   news_embedding:
-    build: 
+    build:
       context: ./Information-Querying-Component
       dockerfile: ./news_embedding/Dockerfile
     depends_on:
@@ -53,13 +53,24 @@ services:
     env_file: ./Information-Querying-Component/.env.docker
 
   news_search:
-    build: 
+    build:
       context: ./Information-Querying-Component
       dockerfile: ./news_search/Dockerfile
     depends_on:
       kafka:
         condition: service_healthy
       opensearch:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Information-Querying-Component/.env.docker
+
+  fact_querying:
+    build:
+      context: ./Information-Querying-Component
+      dockerfile: ./fact_querying/Dockerfile
+    depends_on:
+      kafka:
         condition: service_healthy
     networks:
       - ecaption
