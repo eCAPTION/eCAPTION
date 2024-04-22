@@ -10,5 +10,5 @@ This repository holds the docker-compose configuration for the eCAPTION applicat
     - Setup `.whitelist` in the `web_scraper` directory by following the `README.md` there.
     - Setup `.env.docker` in the Information-Querying-Component directory by following the `README.md` there.
 5. Setup the Chatbot-Component
-    - Setup the `.env` file by referencing the `.env.example` file in the directory.
+    - Setup the `.env.docker` file by referencing the `.env.docker.example` file in the `Chatbot-Component` directory.
 6. To start the docker-compose setup, run `make start-docker`.
