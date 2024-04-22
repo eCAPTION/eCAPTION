@@ -6,7 +6,7 @@ services:
       dockerfile: ./chatbot/Dockerfile
     networks:
       - ecaption
-    env_file: ./Chatbot-Component/.env
+    env_file: ./Chatbot-Component/.env.docker
 
   chatbot_kafka_consumer:
     build:
@@ -18,6 +18,26 @@ services:
     networks:
       - ecaption
     env_file: ./Chatbot-Component/.env
+
+  infographic_generator_kafka_consumer:
+    build:
+      context: ./Infographic_Generator
+      dockerfile: ./kafka_app/Dockerfile
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - ecaption
+    env_file: ./Infographic_Generator/kafka_app/.env.docker
+
+  infographic_generator_endpoint:
+    build:
+      context: ./Infographic_Generator
+      dockerfile: ./Dockerfile
+    networks:
+      - ecaption
+  #   ports:
+  #     - 8000:8000
 
   web_scraper:
     build:
@@ -121,6 +141,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 10
+    env_file: ./Information-Querying-Component/.env.docker
 
 networks:
   ecaption:
